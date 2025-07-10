@@ -1,6 +1,3 @@
-// Package logger provides a structured and configurable logging utility
-// for the IAM service. It wraps the zap logger with additional configuration
-// logic based on environment and service-level details.
 package logger
 
 import (
@@ -12,14 +9,15 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// logger wraps zap.SugaredLogger to provide structured and leveled logging,
-// along with configuration from the IAM service.
+// logger wraps zap.SugaredLogger and holds logging config information.
 type logger struct {
 	*zap.SugaredLogger
 	config *config.Logging
 }
 
-// NewWithConfig creates and returns a new Logger instance based on the provided configuration.
+// NewWithConfig initializes a new logger using the provided service name,
+// version, environment, and configuration. It sets up the encoder, log level,
+// and output format based on whether the environment is development or production.
 func NewWithConfig(service, version string, environment config.Environment, cfg *config.Logging) (*logger, error) {
 	// Parse the log level from the config string.
 	level, err := zapcore.ParseLevel(cfg.Level)
@@ -31,21 +29,25 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 	zapConfig := zap.NewDevelopmentConfig()
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
 
-	// For production, switch to production-safe configuration and encoding.
+	// Switch to production settings if applicable.
 	if environment == config.EnvironmentProduction {
 		zapConfig = zap.NewProductionConfig()
 		encoderConfig = zap.NewProductionEncoderConfig()
 	} else {
-		// Enable colored log levels for better readability in development.
+		// Add color for easier reading in development logs.
 		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
-	// Customize the zap config.
-	zapConfig.OutputPaths = []string{"stderr"}
+	// Apply common configurations.
+	zapConfig.Encoding = "json"
+	zapConfig.DisableCaller = false
+	zapConfig.DisableStacktrace = false
 	zapConfig.Level = zap.NewAtomicLevelAt(level)
+
+	zapConfig.OutputPaths = []string{"stderr"}
 	zapConfig.ErrorOutputPaths = []string{"stderr"}
 
-	// Customize the encoder keys and format.
+	// Customize encoder keys and format.
 	zapConfig.EncoderConfig = encoderConfig
 	zapConfig.EncoderConfig.LevelKey = "level"
 	zapConfig.EncoderConfig.CallerKey = "caller"
@@ -54,7 +56,7 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 	zapConfig.EncoderConfig.StacktraceKey = "stacktrace"
 	zapConfig.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	// Set initial fields that will be included with every log entry.
+	// Add service-level fields to every log entry.
 	zapConfig.InitialFields = map[string]any{
 		"service": service,
 		"version": version,
@@ -62,12 +64,15 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 	}
 
 	return &logger{
-		config:        cfg,
-		SugaredLogger: zap.Must(zapConfig.Build()).Sugar(),
+		config: cfg,
+		SugaredLogger: zap.Must(
+			zapConfig.Build(zap.AddCallerSkip(1), zap.AddStacktrace(zap.ErrorLevel)),
+		).Sugar(),
 	}, nil
 }
 
-// LogRequest logs structured metadata about an HTTP request at the info level.
+// LogRequest logs an HTTP request with relevant metadata,
+// including user ID, HTTP method, path, client IP, duration, and status code.
 func (l *logger) LogRequest(msg, method, path, userID, clientIP, duration string, statusCode int) {
 	l.Infow(msg,
 		UserID(userID),
@@ -79,7 +84,7 @@ func (l *logger) LogRequest(msg, method, path, userID, clientIP, duration string
 	)
 }
 
-// Close flushes any buffered log entries to the output and releases resources.
+// Close ensures that any buffered logs are flushed to the output.
 func (l *logger) Close() error {
 	return l.Sync()
 }
