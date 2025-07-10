@@ -40,11 +40,13 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
-	// Assign encoder configuration and log level to the zap config.
-	zapConfig.EncoderConfig = encoderConfig
+	// Customize the zap config.
+	zapConfig.OutputPaths = []string{"stderr"}
 	zapConfig.Level = zap.NewAtomicLevelAt(level)
+	zapConfig.ErrorOutputPaths = []string{"stderr"}
 
 	// Customize the encoder keys and format.
+	zapConfig.EncoderConfig = encoderConfig
 	zapConfig.EncoderConfig.LevelKey = "level"
 	zapConfig.EncoderConfig.CallerKey = "caller"
 	zapConfig.EncoderConfig.TimeKey = "timestamp"
@@ -65,6 +67,19 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 	}, nil
 }
 
+// LogRequest logs structured metadata about an HTTP request at the info level.
+func (l *logger) LogRequest(msg, method, path, userID, clientIP, duration string, statusCode int) {
+	l.Infow(msg,
+		UserID(userID),
+		zap.String("path", path),
+		zap.String("method", method),
+		zap.String("duration", duration),
+		zap.String("client_ip", clientIP),
+		zap.Int("status_code", statusCode),
+	)
+}
+
+// Close flushes any buffered log entries to the output and releases resources.
 func (l *logger) Close() error {
 	return l.Sync()
 }
