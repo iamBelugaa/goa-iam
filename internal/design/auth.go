@@ -4,26 +4,27 @@ import (
 	"goa.design/goa/v3/dsl"
 )
 
+// SignupRequest defines the structure of the payload sent to the signup endpoint.
 var SignupRequest = dsl.Type("SignupRequest", func() {
-	dsl.Description("Signup request payload structure")
+	dsl.Description("Payload for user signup. Includes user identity and authentication credentials.")
 
-	dsl.Attribute("firstName", dsl.String, "First Name", func() {
+	dsl.Attribute("firstName", dsl.String, "User's first name", func() {
 		dsl.MinLength(3)
-		dsl.Example("john")
+		dsl.Example("John")
 	})
 
-	dsl.Attribute("lastName", dsl.String, "Last Name", func() {
+	dsl.Attribute("lastName", dsl.String, "User's last name", func() {
 		dsl.MinLength(2)
-		dsl.Example("doe")
+		dsl.Example("Doe")
 	})
 
-	dsl.Attribute("email", dsl.String, "Email Address", func() {
+	dsl.Attribute("email", dsl.String, "User's email address", func() {
 		dsl.Format(dsl.FormatEmail)
 		dsl.Example("work", "john@work.com")
 		dsl.Example("personal", "john@gmail.com")
 	})
 
-	dsl.Attribute("password", dsl.String, "User Password", func() {
+	dsl.Attribute("password", dsl.String, "User's password (8-32 characters)", func() {
 		dsl.MinLength(8)
 		dsl.MaxLength(32)
 		dsl.Example("secure-password")
@@ -32,36 +33,78 @@ var SignupRequest = dsl.Type("SignupRequest", func() {
 	dsl.Required("firstName", "lastName", "email", "password")
 })
 
+// SignupResponse defines the structure of the response returned after successful signup.
 var SignupResponse = dsl.Type("SignupResponse", func() {
-	dsl.Description("Signup response payload structure")
+	dsl.Description("Response returned after user signup indicating success and the associated email.")
 
-	dsl.Attribute("success", dsl.Boolean, "Indicates success or false")
-
-	dsl.Attribute("email", dsl.String, "User Email Address", func() {
+	dsl.Attribute("success", dsl.Boolean, "Indicates if the signup was successful")
+	dsl.Attribute("email", dsl.String, "Email address of the signed-up user", func() {
 		dsl.Format(dsl.FormatEmail)
-		dsl.Example("work", "john@work.com")
-		dsl.Example("personal", "john@gmail.com")
+		dsl.Example("john@work.com")
 	})
 
 	dsl.Required("success", "email")
 })
 
-// AuthService defines the authentication and authorization endpoints.
+// SigninRequest defines the structure of the payload sent to the signin endpoint.
+var SigninRequest = dsl.Type("SigninRequest", func() {
+	dsl.Description("Payload for user signin. Contains email and password.")
+
+	dsl.Attribute("email", dsl.String, "User's email address", func() {
+		dsl.Format(dsl.FormatEmail)
+		dsl.Example("user@example.com")
+	})
+	dsl.Attribute("password", dsl.String, "User's password", func() {
+		dsl.MinLength(8)
+		dsl.Example("secure-password")
+	})
+
+	dsl.Required("email", "password")
+})
+
+// TokenResponse defines the JWT token structure returned upon successful signin.
+var TokenResponse = dsl.Type("TokenResponse", func() {
+	dsl.Description("JWT tokens and metadata issued upon successful authentication.")
+
+	dsl.Attribute("accessToken", dsl.String, "JWT access token", func() {
+		dsl.Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+	})
+
+	dsl.Attribute("refreshToken", dsl.String, "JWT refresh token", func() {
+		dsl.Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+	})
+
+	dsl.Attribute("tokenType", dsl.String, "Type of token issued", func() {
+		dsl.Enum("Bearer")
+		dsl.Example("Bearer")
+	})
+
+	dsl.Attribute("expiresIn", dsl.Int, "Expiration time (in seconds) for the access token", func() {
+		dsl.Minimum(60)
+		dsl.Example(3600)
+	})
+
+	dsl.Required("accessToken", "refreshToken", "tokenType", "expiresIn")
+})
+
+// AuthService defines the authentication and authorization service interface.
 var _ = dsl.Service("auth", func() {
-	dsl.Description("Authentication and Authorization service")
+	dsl.Description("The auth service handles user registration, authentication, and token issuance.")
 
-	// Define common error responses that can occur across all auth endpoints.
-	dsl.Error("conflict", dsl.ErrorResult, "Email Conflict")
-	dsl.Error("unauthorized", dsl.ErrorResult, "Unauthorized")
-	dsl.Error("invalid_credentials", dsl.ErrorResult, "Invalid Credentials")
+	// Common errors across the auth endpoints.
+	dsl.Error("conflict", dsl.ErrorResult, "The email is already registered")
+	dsl.Error("invalid_credentials", dsl.ErrorResult, "Incorrect email or password")
+	dsl.Error("unauthorized", dsl.ErrorResult, "User is not authenticated")
+	dsl.Error("invalid_token", dsl.ErrorResult, "Provided token is invalid or expired")
 
-	// HTTP transport configuration for the auth service.
+	// Base path for the auth service.
 	dsl.HTTP(func() {
 		dsl.Path("/auth")
 	})
 
+	// Signup endpoint.
 	dsl.Method("signup", func() {
-		dsl.Description("Signup user endpoint")
+		dsl.Description("Registers a new user with provided credentials and personal info.")
 
 		dsl.Payload(SignupRequest)
 		dsl.Result(SignupResponse)
@@ -80,6 +123,29 @@ var _ = dsl.Service("auth", func() {
 			dsl.Response("conflict", dsl.StatusConflict)
 			dsl.Response(dsl.StatusCreated, func() {
 				dsl.Body(SignupResponse)
+			})
+		})
+	})
+
+	// Signin endpoint.
+	dsl.Method("signin", func() {
+		dsl.Description("Authenticates a user and returns a JWT access and refresh token.")
+
+		dsl.Payload(SigninRequest)
+		dsl.Result(TokenResponse)
+		dsl.Error("invalid_credentials")
+
+		dsl.HTTP(func() {
+			dsl.POST("/signin")
+
+			dsl.Body(func() {
+				dsl.Attribute("email")
+				dsl.Attribute("password")
+			})
+
+			dsl.Response("invalid_credentials", dsl.StatusUnauthorized)
+			dsl.Response(dsl.StatusOK, func() {
+				dsl.Body(TokenResponse)
 			})
 		})
 	})
