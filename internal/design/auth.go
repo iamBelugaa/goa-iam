@@ -87,6 +87,18 @@ var TokenResponse = dsl.Type("TokenResponse", func() {
 	dsl.Required("accessToken", "refreshToken", "tokenType", "expiresIn")
 })
 
+// SignoutRequest defines the payload for the signout endpoint.
+var SignoutRequest = dsl.Type("SignoutRequest", func() {
+	dsl.Description("Payload for user signout.")
+
+	dsl.Token("token", dsl.String, "JWT token from Authorization header", func() {
+		dsl.Description("JWT access token extracted from Authorization: Bearer <token>")
+		dsl.Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+	})
+
+	dsl.Required("token")
+})
+
 // AuthService defines the authentication and authorization service interface.
 var _ = dsl.Service("auth", func() {
 	dsl.Description("The auth service handles user registration, authentication, and token issuance.")
@@ -147,6 +159,25 @@ var _ = dsl.Service("auth", func() {
 			dsl.Response(dsl.StatusOK, func() {
 				dsl.Body(TokenResponse)
 			})
+		})
+	})
+
+	// Signout endpoint.
+	dsl.Method("signout", func() {
+		dsl.Description("Logs out an authenticated user by invalidating the access or refresh token.")
+		dsl.Security(JWTAuth)
+
+		dsl.Payload(SignoutRequest)
+		dsl.Result(dsl.Empty)
+
+		dsl.Error("unauthorized")
+		dsl.Error("invalid_token")
+
+		dsl.HTTP(func() {
+			dsl.POST("/signout")
+			dsl.Response(dsl.StatusNoContent)
+			dsl.Response("unauthorized", dsl.StatusUnauthorized)
+			dsl.Response("invalid_token", dsl.StatusUnauthorized)
 		})
 	})
 })
