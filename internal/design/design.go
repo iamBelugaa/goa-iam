@@ -4,28 +4,40 @@ import (
 	"goa.design/goa/v3/dsl"
 )
 
-// API describes the global properties of the API server.
+// API defines the global settings and metadata for the IAM Platform service.
 var _ = dsl.API("iam-platform", func() {
 	dsl.Title("Identity and Access Management Platform")
-	dsl.Description("A IAM service for authentication, authorization and user management")
+	dsl.Description(
+		`The IAM Platform provides core identity related functionalities such as:
+		- User registration and login
+		- JWT-based authentication
+		- Role-based authorization
+		- Token management (access/refresh)`,
+	)
 	dsl.Version("0.1.0")
 
-	// Define server configuration.
+	// Server block defines where the services are hosted.
 	dsl.Server("iam", func() {
-		dsl.Description("IAM service server")
+		dsl.Description("Primary server hosting the IAM service")
 
-		// Services define the different functional areas of our API.
+		// List of services exposed on this server.
 		dsl.Services("auth")
 
-		// Host defines where the server runs.
+		// Host represents a deployment environment (e.g., dev, staging, prod).
 		dsl.Host("localhost", func() {
-			dsl.Description("Development server")
+			dsl.Description("Local development environment")
 			dsl.URI("http://localhost:8080")
 		})
 	})
 
-	// Global prefix for all services.
+	// Global HTTP configuration.
 	dsl.HTTP(func() {
+		// All endpoints will be prefixed with /api/v1
 		dsl.Path("/api/v1")
 	})
+})
+
+// JWTAuth defines the JWT authentication scheme used throughout the API.
+var JWTAuth = dsl.JWTSecurity("JWTAuth", func() {
+	dsl.Description("JWT token authentication")
 })
