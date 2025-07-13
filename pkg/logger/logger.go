@@ -9,8 +9,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// logger wraps zap.SugaredLogger and holds logging config information.
-type logger struct {
+// Logger wraps zap.SugaredLogger and holds logging config information.
+type Logger struct {
 	*zap.SugaredLogger
 	config *config.Logging
 }
@@ -18,7 +18,7 @@ type logger struct {
 // NewWithConfig initializes a new logger using the provided service name,
 // version, environment, and configuration. It sets up the encoder, log level,
 // and output format based on whether the environment is development or production.
-func NewWithConfig(service, version string, environment config.Environment, cfg *config.Logging) (*logger, error) {
+func NewWithConfig(service, version string, environment config.Environment, cfg *config.Logging) (*Logger, error) {
 	// Parse the log level from the config string.
 	level, err := zapcore.ParseLevel(cfg.Level)
 	if err != nil {
@@ -63,7 +63,7 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 		"pid":     os.Getpid(),
 	}
 
-	return &logger{
+	return &Logger{
 		config: cfg,
 		SugaredLogger: zap.Must(
 			zapConfig.Build(zap.AddCallerSkip(1), zap.AddStacktrace(zap.ErrorLevel)),
@@ -73,7 +73,7 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 
 // LogRequest logs an HTTP request with relevant metadata,
 // including user ID, HTTP method, path, client IP, duration, and status code.
-func (l *logger) LogRequest(msg, method, path, userID, clientIP, duration string, statusCode int) {
+func (l *Logger) LogRequest(msg, method, path, userID, clientIP, duration string, statusCode int) {
 	l.Infow(msg,
 		UserID(userID),
 		zap.String("path", path),
@@ -85,6 +85,6 @@ func (l *logger) LogRequest(msg, method, path, userID, clientIP, duration string
 }
 
 // Close ensures that any buffered logs are flushed to the output.
-func (l *logger) Close() error {
+func (l *Logger) Close() error {
 	return l.Sync()
 }
