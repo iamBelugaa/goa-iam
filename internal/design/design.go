@@ -9,10 +9,11 @@ var _ = dsl.API("iam-platform", func() {
 	dsl.Title("Identity and Access Management Platform")
 	dsl.Description(
 		`The IAM Platform provides core identity related functionalities such as:
-		- User registration and login
-		- JWT-based authentication
-		- Role-based authorization
-		- Token management (access/refresh)`,
+			- User registration and login
+			- JWT-based authentication
+			- Role-based authorization
+			- Token management (access/refresh)
+		`,
 	)
 	dsl.Version("0.1.0")
 
@@ -55,12 +56,7 @@ var SuccessResponse = dsl.Type("SuccessResponse", func() {
 		dsl.Example("Operation completed successfully")
 	})
 
-	dsl.Attribute("data", dsl.Any, "Optional payload returned on success", func() {
-		dsl.Example(map[string]any{
-			"id":   123,
-			"name": "Sample Item",
-		})
-	})
+	dsl.Attribute("data", dsl.Any, "Optional payload returned on success")
 
 	dsl.Required("success", "message")
 })

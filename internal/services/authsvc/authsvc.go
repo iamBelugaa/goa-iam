@@ -9,16 +9,16 @@ import (
 	"github.com/iamBelugaa/goa-iam/pkg/logger"
 )
 
-type authService struct {
+type service struct {
 	log       *logger.Logger
 	userStore userstore.UserStorer
 }
 
-func NewService(log *logger.Logger, userStore userstore.UserStorer) *authService {
-	return &authService{log: log, userStore: userStore}
+func NewService(log *logger.Logger, userStore userstore.UserStorer) *service {
+	return &service{log: log, userStore: userStore}
 }
 
-func (s *authService) Signup(ctx context.Context, req *auth.SignupRequest) (*auth.SignupResponse, error) {
+func (s *service) Signup(ctx context.Context, req *auth.SignupRequest) (*auth.SignupResponse, error) {
 	if user, err := s.userStore.QueryUserByEmail(ctx, req.Email); err != nil {
 		return nil, auth.MakeEmailExists(err)
 	} else if user != nil {
@@ -28,7 +28,7 @@ func (s *authService) Signup(ctx context.Context, req *auth.SignupRequest) (*aut
 	return &auth.SignupResponse{Success: true, Message: "", Data: ""}, nil
 }
 
-func (s *authService) Signin(ctx context.Context, req *auth.SigninRequest) (*auth.TokenResponse, error) {
+func (s *service) Signin(ctx context.Context, req *auth.SigninRequest) (*auth.TokenResponse, error) {
 	if user, err := s.userStore.QueryUserByEmail(ctx, req.Email); err != nil {
 		return nil, auth.MakeNotFound(err)
 	} else if user == nil {
@@ -38,6 +38,6 @@ func (s *authService) Signin(ctx context.Context, req *auth.SigninRequest) (*aut
 	return &auth.TokenResponse{}, nil
 }
 
-func (s *authService) Signout(context.Context, *auth.SignoutRequest) (res *auth.SignoutResponse, err error) {
+func (s *service) Signout(context.Context, *auth.SignoutRequest) (res *auth.SignoutResponse, err error) {
 	return &auth.SignoutResponse{}, nil
 }
