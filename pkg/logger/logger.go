@@ -1,3 +1,5 @@
+// Package logger provides structured, context-aware, and configurable logging utilities
+// for the IAM service.
 package logger
 
 import (
