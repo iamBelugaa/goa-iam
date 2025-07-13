@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,26 +10,32 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatalf("error : %v", err)
+	}
+}
+
+func run() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("failed to parse env : %v", err)
+	}
+
 	logger, err := logger.NewWithConfig(
-		"iam", "1.0.0",
-		config.EnvironmentDevelopment,
-		&config.Logging{
-			RequestLogging:  true,
-			RedactSensitive: true,
-			Level:           "info",
-		},
+		cfg.Application.Service,
+		cfg.Application.Version,
+		cfg.Application.Environment, cfg.Logging,
 	)
 	if err != nil {
-		log.Fatalln("failed to construct logger", err)
+		return fmt.Errorf("failed to construct logger : %v", err)
 	}
 
-	logger.LogRequest("Hello World", http.MethodGet, "/api", "", "", "", http.StatusOK)
-	logger.LogRequest("Hello World", http.MethodGet, "/api", "", "", "", http.StatusOK)
-	logger.LogRequest("Hello World", http.MethodGet, "/api", "", "", "", http.StatusOK)
-	logger.LogRequest("Hello World", http.MethodGet, "/api", "", "", "", http.StatusOK)
-	logger.LogRequest("Hello World", http.MethodGet, "/api", "", "", "", http.StatusOK)
+	logger.LogRequest("Request 1", http.MethodGet, "/api/users", "", "", "", http.StatusOK)
+	logger.LogRequest("Request 2", http.MethodPost, "/api/users", "", "", "", http.StatusOK)
 
 	if err := logger.Close(); err != nil {
-		log.Fatalln("failed to flush buffered log entries", err)
+		return fmt.Errorf("failed to flush buffered log entries : %v", err)
 	}
+
+	return nil
 }
