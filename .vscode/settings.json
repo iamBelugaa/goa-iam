@@ -9,6 +9,7 @@
     "genuser",
     "genuserserver",
     "goahttp",
+    "GOARCH",
     "iamcontext",
     "Infow",
     "Muxer",
