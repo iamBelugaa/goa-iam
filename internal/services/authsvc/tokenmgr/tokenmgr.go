@@ -3,7 +3,6 @@ package tokenmgr
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -90,21 +89,14 @@ func (tm *JWTTokenManager) Generate(claims Claims) (string, error) {
 }
 
 // ParseWithClaims extracts and validates claims from the given Bearer token string.
-func (tm *JWTTokenManager) ParseWithClaims(bearerToken string) (Claims, error) {
-	parts := strings.Split(bearerToken, " ")
-
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return Claims{}, auth.MakeInvalidToken(fmt.Errorf("authorization header missing or malformed"))
-	}
-
+func (tm *JWTTokenManager) ParseWithClaims(token string) (Claims, error) {
 	var claims Claims
-	tokenStr := parts[1]
 
-	if _, err := tm.parser.ParseWithClaims(tokenStr, &claims, func(t *jwt.Token) (any, error) {
+	if _, err := tm.parser.ParseWithClaims(token, &claims, func(t *jwt.Token) (any, error) {
 		if t.Method != tm.method {
 			return "", auth.MakeInvalidToken(fmt.Errorf("invalid token signature"))
 		}
-		return tm.cfg.Secret, nil
+		return []byte(tm.cfg.Secret), nil
 	}); err != nil {
 		return Claims{}, auth.MakeInvalidToken(fmt.Errorf("invalid token"))
 	}

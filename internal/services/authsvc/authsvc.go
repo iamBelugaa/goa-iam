@@ -104,7 +104,7 @@ func (s *service) Signin(ctx context.Context, req *genauth.SigninRequest) (*gena
 
 // Signout invalidates an access token by verifying its validity and user existence.
 func (s *service) Signout(ctx context.Context, req *genauth.SignoutRequest) (*genauth.SignoutResponse, error) {
-	s.log.Infow("signout request successful", "token", redact.RedactSensitiveData(req.Token))
+	s.log.Infow("signout request received", "token", redact.RedactSensitiveData(req.Token))
 
 	claims, err := s.tm.ParseWithClaims(req.Token)
 	if err != nil {
