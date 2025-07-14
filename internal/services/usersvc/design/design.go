@@ -1,3 +1,5 @@
+// Package design contains the service design definitions for Goa.
+// This file defines the "user" service, including its methods, errors, and HTTP interface.
 package design
 
 import (
@@ -6,21 +8,22 @@ import (
 )
 
 // UserService defines the user management endpoints.
-// This service handles CRUD operations for users, roles, and permissions.
 var _ = dsl.Service("user", func() {
-	dsl.Description("User management service for CRUD operations on users, roles, and permissions")
+	dsl.Description("User management service for CRUD operations on users, roles, and permissions.")
 
-	// Applies common error types.
+	// Common domain level error types.
 	rootdesign.CommonErrors()
-	dsl.Error("email_exists", rootdesign.ConflictError, "Email address is already registered")
-	dsl.Error("user_not_found", rootdesign.NotFoundError, "User account not found")
 
-	// Base path for the user service.
+	// Specific service level errors.
+	dsl.Error("email_exists", rootdesign.ConflictError, "Email address is already registered.")
+	dsl.Error("user_not_found", rootdesign.NotFoundError, "User account not found.")
+
+	// Base URL path for all HTTP endpoints in the user service.
 	dsl.HTTP(func() {
 		dsl.Path("/users")
 	})
 
-	// List all users.
+	// --- Method: list ---
 	dsl.Method("list", func() {
 		dsl.Description("List all users in the system.")
 
@@ -35,14 +38,13 @@ var _ = dsl.Service("user", func() {
 		})
 	})
 
-	// Get user by ID.
+	// --- Method: getById ---
 	dsl.Method("getById", func() {
-		dsl.Description("Retrieve a user by their ID.")
+		dsl.Description("Retrieve a user by their unique ID.")
 
+		dsl.Error("user_not_found")
 		dsl.Payload(GetUserByIDRequest)
 		dsl.Result(GetUserByIDResponse)
-
-		dsl.Error("not_found")
 
 		dsl.HTTP(func() {
 			dsl.GET("/{id}")
@@ -52,21 +54,22 @@ var _ = dsl.Service("user", func() {
 		})
 	})
 
+	// --- Method: create ---
 	dsl.Method("create", func() {
-		dsl.Description("Create a new user account")
+		dsl.Description("Create a new user account in the system.")
 
+		dsl.Error("email_exists")
 		dsl.Payload(CreateUserRequest)
 		dsl.Result(CreateUserResponse)
 
-		dsl.Error("email_exists")
-
 		dsl.HTTP(func() {
 			dsl.POST("/")
+
 			dsl.Body(func() {
-				dsl.Attribute("firstName")
-				dsl.Attribute("lastName")
-				dsl.Attribute("email")
-				dsl.Attribute("password")
+				dsl.Attribute("firstName", dsl.String, "User's first name")
+				dsl.Attribute("lastName", dsl.String, "User's last name")
+				dsl.Attribute("email", dsl.String, "Email used for login")
+				dsl.Attribute("password", dsl.String, "Password (plain text, will be hashed)")
 			})
 
 			dsl.Response(dsl.StatusCreated, func() {

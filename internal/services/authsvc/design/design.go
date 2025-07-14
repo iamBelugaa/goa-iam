@@ -9,25 +9,15 @@ import (
 var _ = dsl.Service("auth", func() {
 	dsl.Description("The auth service handles user registration, authentication, and token issuance.")
 
-	// Common errors across the auth endpoints.
+	// Common domain level error types.
 	rootdesign.CommonErrors()
 
-	// Invalid credentials provided during signin.
+	// Specific service level errors.
 	dsl.Error("invalid_credentials", rootdesign.UnauthorizedError, "Invalid email or password")
-
-	// Invalid confirm password during signup.
 	dsl.Error("password_mismatch", rootdesign.ValidationError, "Password and confirmation password do not match")
-
-	// Email already exists during registration.
 	dsl.Error("email_exists", rootdesign.ConflictError, "Email address is already registered")
-
-	// User account not found
 	dsl.Error("user_not_found", rootdesign.NotFoundError, "User account not found")
-
-	// JWT token is invalid or malformed.
 	dsl.Error("invalid_token", rootdesign.UnauthorizedError, "Invalid or expired token")
-
-	// Session has expired.
 	dsl.Error("session_expired", rootdesign.UnauthorizedError, "Session has expired")
 
 	// Base path for the auth service.
@@ -35,7 +25,7 @@ var _ = dsl.Service("auth", func() {
 		dsl.Path("/auth")
 	})
 
-	// Signup endpoint.
+	// --- Method: signup ---
 	dsl.Method("signup", func() {
 		dsl.Description("Registers a new user with provided credentials and personal info.")
 
@@ -63,7 +53,7 @@ var _ = dsl.Service("auth", func() {
 		})
 	})
 
-	// Signin endpoint.
+	// --- Method: signin ---
 	dsl.Method("signin", func() {
 		dsl.Description("Authenticates a user and returns a JWT access and refresh token.")
 
@@ -86,7 +76,7 @@ var _ = dsl.Service("auth", func() {
 		})
 	})
 
-	// Signout endpoint.
+	// --- Method: signout ---
 	dsl.Method("signout", func() {
 		dsl.Description("Logs out an authenticated user by invalidating the access or refresh token.")
 		dsl.Security(rootdesign.JWTAuth)

@@ -32,10 +32,10 @@ func (s *service) List(ctx context.Context) (*genuser.ListUsersResponse, error) 
 func (s *service) GetByID(ctx context.Context, req *genuser.GetUserByIDPayload) (*genuser.GetUserByIDResponse, error) {
 	user, err := s.store.QueryById(ctx, req.ID)
 	if err != nil {
-		return nil, genuser.MakeNotFound(err)
+		return nil, genuser.MakeUserNotFound(err)
 	}
 	if user == nil {
-		return nil, genuser.MakeNotFound(fmt.Errorf("user with id %s doesn't exist", req.ID))
+		return nil, genuser.MakeUserNotFound(fmt.Errorf("user with id %s doesn't exist", req.ID))
 	}
 
 	return &genuser.GetUserByIDResponse{

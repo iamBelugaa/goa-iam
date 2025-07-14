@@ -5,13 +5,14 @@ import (
 	"goa.design/goa/v3/dsl"
 )
 
-// ListUsersResponse represents the response structure for listing users.
+// ListUsersResponse represents the structure of a list of all users.
 var ListUsersResponse = dsl.Type("ListUsersResponse", func() {
 	dsl.Description("Response returned when listing all users.")
+
 	dsl.Reference(rootdesign.SuccessResponse)
 
-	dsl.Attribute("success")
-	dsl.Attribute("message")
+	dsl.Attribute("success", dsl.Boolean, "Whether the request was successful.")
+	dsl.Attribute("message", dsl.String, "Human-readable message explaining the result.")
 	dsl.Attribute("data", dsl.ArrayOf(User), "List of users returned in the response", func() {
 		dsl.Example([]any{
 			map[string]any{
@@ -29,7 +30,10 @@ var ListUsersResponse = dsl.Type("ListUsersResponse", func() {
 	dsl.Required("success", "message", "data")
 })
 
+// GetUserByIDRequest defines the payload to retrieve a single user by ID.
 var GetUserByIDRequest = dsl.Type("GetUserByIDPayload", func() {
+	dsl.Description("Payload for retrieving a user by unique identifier.")
+
 	dsl.Attribute("id", dsl.String, "User's unique identifier", func() {
 		dsl.Format(dsl.FormatUUID)
 		dsl.Example("4d2efde6-448a-4c26-a69a-26c2f9a6de4a")
@@ -38,13 +42,18 @@ var GetUserByIDRequest = dsl.Type("GetUserByIDPayload", func() {
 	dsl.Required("id")
 })
 
+// GetUserByIDResponse defines the response when a user is retrieved by ID.
 var GetUserByIDResponse = dsl.Type("GetUserByIDResponse", func() {
+	dsl.Description("Response returned when retrieving a user by ID.")
+
 	dsl.Reference(rootdesign.SuccessResponse)
-	dsl.Attribute("success")
-	dsl.Attribute("message")
-	dsl.Attribute("data", User, "User returned in the response")
+
+	dsl.Attribute("success", dsl.Boolean, "Whether the request was successful.")
+	dsl.Attribute("message", dsl.String, "Human-readable message explaining the result.")
+	dsl.Attribute("data", User, "User returned in the response.")
 })
 
+// CreateUserRequest defines the payload for creating a new user.
 var CreateUserRequest = dsl.Type("CreateUserRequest", func() {
 	dsl.Description("Payload for user creation. Includes user identity and authentication credentials.")
 
@@ -64,11 +73,10 @@ var CreateUserRequest = dsl.Type("CreateUserRequest", func() {
 
 	dsl.Attribute("email", dsl.String, "User's email address", func() {
 		dsl.Format(dsl.FormatEmail)
-		dsl.Example("work", "john@work.com")
-		dsl.Example("personal", "john@gmail.com")
+		dsl.Example("john.doe@example.com")
 	})
 
-	dsl.Attribute("password", dsl.String, "User's password (8-32 characters)", func() {
+	dsl.Attribute("password", dsl.String, "User's password (8-128 characters)", func() {
 		dsl.MinLength(8)
 		dsl.MaxLength(128)
 		dsl.Example("secure-password")
@@ -77,11 +85,15 @@ var CreateUserRequest = dsl.Type("CreateUserRequest", func() {
 	dsl.Required("firstName", "lastName", "email", "password")
 })
 
+// CreateUserResponse defines the structure of the response when a new user is created.
 var CreateUserResponse = dsl.Type("CreateUserResponse", func() {
+	dsl.Description("Response returned after successfully creating a user.")
+
 	dsl.Reference(rootdesign.SuccessResponse)
-	dsl.Attribute("success")
-	dsl.Attribute("message")
-	dsl.Attribute("data", User, "Returned user", func() {
+
+	dsl.Attribute("success", dsl.Boolean, "Whether the request was successful.")
+	dsl.Attribute("message", dsl.String, "Human-readable message explaining the result.")
+	dsl.Attribute("data", User, "Details of the created user.", func() {
 		dsl.Example(map[string]any{
 			"id":        "4d2efde6-448a-4c26-a69a-26c2f9a6de4a",
 			"firstName": "John",
