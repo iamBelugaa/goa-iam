@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/iamBelugaa/goa-iam/gen/auth/gen/auth"
+	genauth "github.com/iamBelugaa/goa-iam/gen/auth/gen/auth"
+	genuser "github.com/iamBelugaa/goa-iam/gen/user/gen/user"
+	"github.com/iamBelugaa/goa-iam/internal/config"
+	"github.com/iamBelugaa/goa-iam/internal/services/authsvc/tokenmgr"
 	userstore "github.com/iamBelugaa/goa-iam/internal/services/usersvc/store"
 	"github.com/iamBelugaa/goa-iam/pkg/logger"
 )
@@ -12,32 +15,70 @@ import (
 type service struct {
 	log       *logger.Logger
 	userStore userstore.UserStorer
+	tm        *tokenmgr.JWTTokenManager
 }
 
-func NewService(log *logger.Logger, userStore userstore.UserStorer) *service {
-	return &service{log: log, userStore: userStore}
+func NewService(log *logger.Logger, userStore userstore.UserStorer, authCfg *config.Auth) *service {
+	return &service{log: log, userStore: userStore, tm: tokenmgr.NewJWTManager(authCfg)}
 }
 
-func (s *service) Signup(ctx context.Context, req *auth.SignupRequest) (*auth.SignupResponse, error) {
-	if user, err := s.userStore.QueryUserByEmail(ctx, req.Email); err != nil {
-		return nil, auth.MakeEmailExists(err)
-	} else if user != nil {
-		return nil, auth.MakeEmailExists(fmt.Errorf("user with email %s already exists", req.Email))
+func (s *service) Signup(ctx context.Context, req *genauth.SignupRequest) (*genauth.SignupResponse, error) {
+	if req.Password != req.ConfirmPassword {
+		return nil, genauth.MakePasswordMismatch(fmt.Errorf("confirm password and password doesn't match"))
 	}
 
-	return &auth.SignupResponse{Success: true, Message: "", Data: ""}, nil
-}
-
-func (s *service) Signin(ctx context.Context, req *auth.SigninRequest) (*auth.TokenResponse, error) {
-	if user, err := s.userStore.QueryUserByEmail(ctx, req.Email); err != nil {
-		return nil, auth.MakeNotFound(err)
-	} else if user == nil {
-		return nil, auth.MakeNotFound(fmt.Errorf("user with email %s doesn't exists", req.Email))
+	_, err := s.userStore.Create(ctx, &genuser.CreateUserRequest{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  req.Password,
+	})
+	if err != nil {
+		return nil, genauth.MakeEmailExists(err)
 	}
 
-	return &auth.TokenResponse{}, nil
+	return &genauth.SignupResponse{Success: true, Message: "User signed up successfully"}, nil
 }
 
-func (s *service) Signout(context.Context, *auth.SignoutRequest) (res *auth.SignoutResponse, err error) {
-	return &auth.SignoutResponse{}, nil
+func (s *service) Signin(ctx context.Context, req *genauth.SigninRequest) (*genauth.TokenResponse, error) {
+	user, err := s.userStore.QueryById(ctx, req.Email)
+	if err != nil {
+		return nil, genauth.MakeNotFound(err)
+	}
+	if user == nil {
+		return nil, genauth.MakeNotFound(fmt.Errorf("user with email %s doesn't exists", req.Email))
+	}
+
+	accessToken, err := s.tm.Generate(s.tm.StandardClaims(user.ID, tokenmgr.AccessToken))
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := s.tm.Generate(s.tm.StandardClaims(user.ID, tokenmgr.RefreshToken))
+	if err != nil {
+		return nil, err
+	}
+
+	return &genauth.TokenResponse{
+		Success: true,
+		Message: "Signed in user successfully",
+		Data:    &genauth.TokenPayload{AccessToken: accessToken, RefreshToken: refreshToken},
+	}, nil
+}
+
+func (s *service) Signout(ctx context.Context, req *genauth.SignoutRequest) (res *genauth.SignoutResponse, err error) {
+	claims, err := s.tm.ParseWithClaims(req.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.TokenType != tokenmgr.AccessToken {
+		return nil, genauth.MakeInvalidToken(fmt.Errorf("invalid token used for signout operation"))
+	}
+
+	if _, err := s.userStore.QueryById(ctx, claims.Subject); err != nil {
+		return nil, genauth.MakeNotFound(err)
+	}
+
+	return &genauth.SignoutResponse{Success: true, Message: "Signed out successfully"}, nil
 }

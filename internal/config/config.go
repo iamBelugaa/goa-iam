@@ -54,8 +54,17 @@ type Application struct {
 	Environment Environment `json:"environment"`
 }
 
+type Auth struct {
+	Issuer              string        `json:"issuer"`
+	Secret              string        `json:"secret"`
+	Audience            string        `json:"audience"`
+	AccessTokenExpTime  time.Duration `json:"accessTokenExpTime"`
+	RefreshTokenExpTime time.Duration `json:"refreshTokenExpTime"`
+}
+
 type Config struct {
 	Server      *Server      `json:"server"`
+	Auth        *Auth        `json:"auth"`
 	Logging     *Logging     `json:"logging"`
 	Application *Application `json:"application"`
 }
@@ -74,6 +83,13 @@ func Load() (*Config, error) {
 			IdleTimeout:     getEnvDuration("SERVER_IDLE_TIMEOUT", time.Second*25),
 			WriteTimeout:    getEnvDuration("SERVER_WRITE_TIMEOUT", time.Second*10),
 			ShutdownTimeout: getEnvDuration("SERVER_SHUTDOWN_TIMEOUT", time.Second*30),
+		},
+		Auth: &Auth{
+			Issuer:              getEnv("AUTH_ISSUER", "issuer.iam.support"),
+			Audience:            getEnv("AUTH_AUDIENCE", "http://localhost:8080"),
+			AccessTokenExpTime:  getEnvDuration("AUTH_ACCESS_TOKEN_EXP_TIME", time.Hour),
+			RefreshTokenExpTime: getEnvDuration("AUTH_REFRESH_TOKEN_EXP_TIME", time.Hour*24*60),
+			Secret:              getEnv("AUTH_SECRET", "9916ce66f41d25276ab5923ce5e62ef7fbb6e046bb3072a507bf0362bae0d63d"),
 		},
 		Logging: &Logging{
 			Level:           getEnv("LOG_LEVEL", "INFO"),
