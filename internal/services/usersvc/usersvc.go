@@ -21,9 +21,14 @@ func NewService(userStore userstore.UserStorer) *service {
 
 // List returns all users in the system.
 func (s *service) List(ctx context.Context) (*genuser.ListUsersResponse, error) {
+	users, err := s.store.List(ctx)
+	if err != nil {
+		return nil, genuser.MakeInternalServerError(err)
+	}
+
 	return &genuser.ListUsersResponse{
 		Success: true,
-		Data:    make([]*genuser.User, 0),
+		Data:    users,
 		Message: "User's list fetched successfully",
 	}, nil
 }

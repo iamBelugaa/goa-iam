@@ -17,4 +17,7 @@ type UserStorer interface {
 
 	// Create stores a new user in the storage backend using the provided request payload.
 	Create(ctx context.Context, cmd *user.CreateUserRequest) (*user.User, error)
+
+	// List returns a slice containing all users.
+	List(ctx context.Context) ([]*user.User, error)
 }

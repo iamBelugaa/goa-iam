@@ -29,6 +29,7 @@ var _ = dsl.Service("user", func() {
 
 		dsl.Payload(dsl.Empty)
 		dsl.Result(ListUsersResponse)
+		dsl.Error("internal_server_error")
 
 		dsl.HTTP(func() {
 			dsl.GET("/")

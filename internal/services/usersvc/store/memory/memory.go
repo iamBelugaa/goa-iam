@@ -91,3 +91,20 @@ func (m *memory) Create(ctx context.Context, cmd *user.CreateUserRequest) (*user
 
 	return newUser, nil
 }
+
+// List returns a slice containing all users currently stored in memory.
+func (s *memory) List(ctx context.Context) ([]*user.User, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	// Prepare a slice with the exact length of the stored users map.
+	users := make([]*user.User, len(s.users))
+	var index int
+
+	for _, user := range s.users {
+		users[index] = user
+		index++
+	}
+
+	return users, nil
+}
