@@ -79,17 +79,7 @@ var TokenPayload = dsl.Type("TokenPayload", func() {
 		dsl.Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
 	})
 
-	dsl.Attribute("tokenType", dsl.String, "Type of token issued", func() {
-		dsl.Enum("Bearer")
-		dsl.Example("Bearer")
-	})
-
-	dsl.Attribute("expiresIn", dsl.Int, "Expiration time in seconds for the access token", func() {
-		dsl.Minimum(60)
-		dsl.Example(3600)
-	})
-
-	dsl.Required("accessToken", "refreshToken", "tokenType", "expiresIn")
+	dsl.Required("accessToken", "refreshToken")
 })
 
 // TokenResponse defines the JWT tokens returned after successful authentication.
