@@ -44,6 +44,7 @@ var _ = dsl.Service("auth", func() {
 				dsl.Attribute("lastName")
 				dsl.Attribute("email")
 				dsl.Attribute("password")
+				dsl.Attribute("confirmPassword")
 			})
 
 			dsl.Response(dsl.StatusCreated, func() {

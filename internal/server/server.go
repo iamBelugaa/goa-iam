@@ -40,7 +40,7 @@ type server struct {
 func New(logger *logger.Logger, cfg *config.Config) *server {
 	// Initialize in-memory user store and user service.
 	userStore := usermemorystore.NewMemoryStore()
-	userSvc := usersvc.NewService(userStore)
+	userSvc := usersvc.NewService(logger, userStore)
 	userEndpoints := genuser.NewEndpoints(userSvc)
 
 	// Initialize auth service using user store and configuration.

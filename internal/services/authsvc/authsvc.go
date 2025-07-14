@@ -14,6 +14,7 @@ import (
 	"github.com/iamBelugaa/goa-iam/internal/services/authsvc/tokenmgr"
 	userstore "github.com/iamBelugaa/goa-iam/internal/services/usersvc/store"
 	"github.com/iamBelugaa/goa-iam/pkg/logger"
+	"github.com/iamBelugaa/goa-iam/pkg/redact"
 )
 
 // service implements authentication operations such as signup, signin, signout,
@@ -35,6 +36,14 @@ func NewService(log *logger.Logger, userStore userstore.UserStorer, authCfg *con
 
 // Signup creates a new user account after validating password confirmation.
 func (s *service) Signup(ctx context.Context, req *genauth.SignupRequest) (*genauth.SignupResponse, error) {
+	s.log.Infow(
+		"signup request received",
+		"email", redact.RedactEmail(req.Email),
+		"firstName", req.FirstName, "lastName", req.LastName,
+		"password", redact.RedactSensitiveData(req.Password),
+		"confirmPassword", redact.RedactSensitiveData(req.ConfirmPassword),
+	)
+
 	if req.Password != req.ConfirmPassword {
 		return nil, genauth.MakePasswordMismatch(fmt.Errorf("confirm password and password doesn't match"))
 	}
@@ -46,9 +55,11 @@ func (s *service) Signup(ctx context.Context, req *genauth.SignupRequest) (*gena
 		Password:  req.Password,
 	})
 	if err != nil {
+		s.log.Infow("create user error", "email", redact.RedactEmail(req.Email), "error", err)
 		return nil, genauth.MakeEmailExists(err)
 	}
 
+	s.log.Infow("signup request successful", "email", redact.RedactEmail(req.Email))
 	return &genauth.SignupResponse{
 		Success: true,
 		Message: "User signed up successfully",
@@ -57,11 +68,19 @@ func (s *service) Signup(ctx context.Context, req *genauth.SignupRequest) (*gena
 
 // Signin authenticates a user by email and password.
 func (s *service) Signin(ctx context.Context, req *genauth.SigninRequest) (*genauth.TokenResponse, error) {
+	s.log.Infow(
+		"signin request received",
+		"email", redact.RedactEmail(req.Email),
+		"password", redact.RedactSensitiveData(req.Password),
+	)
+
 	user, err := s.userStore.QueryByEmail(ctx, req.Email)
 	if err != nil {
+		s.log.Infow("query user error", "email", redact.RedactEmail(req.Email), "error", err)
 		return nil, genauth.MakeNotFound(err)
 	}
 	if user == nil {
+		s.log.Infow("query user error", "email", redact.RedactEmail(req.Email), "error", err)
 		return nil, genauth.MakeNotFound(fmt.Errorf("user with email %s doesn't exist", req.Email))
 	}
 
@@ -75,6 +94,7 @@ func (s *service) Signin(ctx context.Context, req *genauth.SigninRequest) (*gena
 		return nil, err
 	}
 
+	s.log.Infow("signin request successful", "email", redact.RedactEmail(req.Email))
 	return &genauth.TokenResponse{
 		Success: true,
 		Message: "Signed in user successfully",
@@ -84,19 +104,25 @@ func (s *service) Signin(ctx context.Context, req *genauth.SigninRequest) (*gena
 
 // Signout invalidates an access token by verifying its validity and user existence.
 func (s *service) Signout(ctx context.Context, req *genauth.SignoutRequest) (*genauth.SignoutResponse, error) {
+	s.log.Infow("signout request successful", "token", redact.RedactSensitiveData(req.Token))
+
 	claims, err := s.tm.ParseWithClaims(req.Token)
 	if err != nil {
+		s.log.Infow("jwt parse error", "error", err)
 		return nil, err
 	}
 
 	if claims.TokenType != tokenmgr.AccessToken {
+		s.log.Infow("invalid token used for signout operation")
 		return nil, genauth.MakeInvalidToken(fmt.Errorf("invalid token used for signout operation"))
 	}
 
 	if _, err := s.userStore.QueryById(ctx, claims.Subject); err != nil {
+		s.log.Infow("query user error", "error", err)
 		return nil, genauth.MakeNotFound(err)
 	}
 
+	s.log.Infow("signout request successful")
 	return &genauth.SignoutResponse{
 		Success: true,
 		Message: "Signed out successfully",

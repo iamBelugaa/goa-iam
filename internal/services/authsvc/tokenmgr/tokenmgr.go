@@ -78,7 +78,7 @@ func (tm *JWTTokenManager) StandardClaims(sub string, tokenType tokenType) Claim
 func (tm *JWTTokenManager) Generate(claims Claims) (string, error) {
 	token := jwt.NewWithClaims(tm.method, claims)
 
-	signedToken, err := token.SignedString(tm.cfg.Secret)
+	signedToken, err := token.SignedString([]byte(tm.cfg.Secret))
 	if err != nil {
 		return "", &auth.InternalServerError{
 			Message: "Failed to sign token string",
