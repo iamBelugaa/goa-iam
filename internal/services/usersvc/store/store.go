@@ -7,6 +7,7 @@ import (
 )
 
 type UserStorer interface {
-	QueryUserById(context context.Context, userID string) (*user.User, error)
-	QueryUserByEmail(context context.Context, email string) (*user.User, error)
+	QueryById(context context.Context, userID string) (*user.User, error)
+	QueryByEmail(context context.Context, email string) (*user.User, error)
+	Create(context context.Context, cmd *user.CreateUserRequest) (*user.User, error)
 }
