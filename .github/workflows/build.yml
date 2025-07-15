@@ -31,5 +31,11 @@ jobs:
       - name: Install ginkgo
         run: go install github.com/onsi/ginkgo/v2/ginkgo
 
+      - name: Install Goa
+        run: |
+          go get goa.design/goa/v3/...
+          go install goa.design/goa/v3/cmd/goa@latest
+          goa version
+
       - name: Build the Application
         run: make build
