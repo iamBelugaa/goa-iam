@@ -28,9 +28,6 @@ jobs:
       - name: Install Dependencies
         run: make deps
 
-      - name: Install ginkgo
-        run: go install github.com/onsi/ginkgo/v2/ginkgo
-
       - name: Install Goa
         run: |
           go get goa.design/goa/v3/...
