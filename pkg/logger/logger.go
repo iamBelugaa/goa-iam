@@ -18,8 +18,7 @@ type Logger struct {
 }
 
 // NewWithConfig initializes a new logger using the provided service name,
-// version, environment, and configuration. It sets up the encoder, log level,
-// and output format based on whether the environment is development or production.
+// version, environment, and configuration.
 func NewWithConfig(service, version string, environment config.Environment, cfg *config.Logging) (*Logger, error) {
 	// Parse the log level from the config string.
 	level, err := zapcore.ParseLevel(cfg.Level)
@@ -71,19 +70,6 @@ func NewWithConfig(service, version string, environment config.Environment, cfg 
 			zapConfig.Build(zap.AddCallerSkip(1), zap.AddStacktrace(zap.ErrorLevel)),
 		).Sugar(),
 	}, nil
-}
-
-// LogRequest logs an HTTP request with relevant metadata,
-// including user ID, HTTP method, path, client IP, duration, and status code.
-func (l *Logger) LogRequest(msg, method, path, userID, clientIP, duration string, statusCode int) {
-	l.Infow(msg,
-		UserID(userID),
-		zap.String("path", path),
-		zap.String("method", method),
-		zap.String("duration", duration),
-		zap.String("client_ip", clientIP),
-		zap.Int("status_code", statusCode),
-	)
 }
 
 // Close ensures that any buffered logs are flushed to the output.
