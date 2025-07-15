@@ -16,12 +16,13 @@ _cgo_export.*
 # Example based on the Makefile:
 dist
 # If your binary is generated elsewhere, add its path, e.g.:
-# bin/
+bin/
 
 # Output directory for cross-compiled binaries from the Makefile
 dist/
 gen/
 .DS_Store
+coverage/
 
 # Test coverage reports
 *.out

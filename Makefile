@@ -5,6 +5,10 @@ BUILD_DIR := ./dist
 GOA_GEN_DIR := ./gen
 BUILD_FLAGS := -v -ldflags="-s -w"
 
+COVERAGE_DIR := coverage
+COVERAGE_PROFILE := coverprofile.out
+COVERAGE_HTML := cover.html
+
 # ANSI Color Codes
 CYAN := \033[36m
 RESET := \033[0m
@@ -12,7 +16,7 @@ GREEN := \033[32m
 YELLOW := \033[33m
 MAGENTA := \033[35m
 
-.PHONY: tidy deps fmt clean gen-goa build run all
+.PHONY: tidy deps fmt clean gen-goa build run all clean-coverage test coverage
 
 ## Tidy Go modules
 tidy:
@@ -62,3 +66,29 @@ run: build
 
 ## Run full cycle: clean, build, run
 all: run
+
+## Clean test coverage files
+clean-coverage:
+	@echo "$(YELLOW)[🧹] Removing test coverage files...$(RESET)"
+	@rm -rf $(COVERAGE_DIR)
+	@echo "$(GREEN)[✅] Test coverage cleanup complete.$(RESET)"
+
+## Run tests with Ginkgo
+test:
+	@echo "$(CYAN)[🧪] Running unit tests...$(RESET)"
+	@ginkgo -v -r
+	@echo "$(GREEN)[✅] Tests completed.$(RESET)"
+
+## Run tests with coverage report
+coverage: clean-coverage
+	@echo "$(CYAN)[📊] Running tests with coverage...$(RESET)"
+	@mkdir -p $(COVERAGE_DIR)
+	@ginkgo -r -v --cover --coverprofile=$(COVERAGE_PROFILE) --output-dir=$(COVERAGE_DIR)
+	@go tool cover -html=$(COVERAGE_DIR)/$(COVERAGE_PROFILE) -o $(COVERAGE_DIR)/$(COVERAGE_HTML)
+	@echo "$(GREEN)[✅] Coverage report generated at $(COVERAGE_DIR)/$(COVERAGE_HTML)$(RESET)"
+	@echo "$(CYAN)[🌐] Opening coverage report in browser...$(RESET)"
+	@{ \
+		if command -v xdg-open >/dev/null 2>&1; then xdg-open $(COVERAGE_DIR)/$(COVERAGE_HTML); \
+		elif command -v open >/dev/null 2>&1; then open $(COVERAGE_DIR)/$(COVERAGE_HTML); \
+		else echo "$(YELLOW)[⚠️] Could not detect a command to open browser.$(RESET)"; fi; \
+	}
