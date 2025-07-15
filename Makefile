@@ -54,7 +54,7 @@ gen-goa:
 	@echo "$(GREEN)[✅] Goa code generation complete.$(RESET)"
 
 ## Build the binary
-build: tidy clean gen-goa
+build: clean gen-goa
 	@echo "$(CYAN)[🔨] Building $(BINARY_NAME) for $(shell go env GOOS)/$(shell go env GOARCH)...$(RESET)"
 	@GOOS=$(shell go env GOOS) GOARCH=$(shell go env GOARCH) go build $(BUILD_FLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PACKAGE)
 	@echo "$(GREEN)[✅] Build complete: $(BUILD_DIR)/$(BINARY_NAME)$(RESET)"
@@ -86,9 +86,3 @@ coverage: clean-coverage
 	@ginkgo -r -v --cover --coverprofile=$(COVERAGE_PROFILE) --output-dir=$(COVERAGE_DIR)
 	@go tool cover -html=$(COVERAGE_DIR)/$(COVERAGE_PROFILE) -o $(COVERAGE_DIR)/$(COVERAGE_HTML)
 	@echo "$(GREEN)[✅] Coverage report generated at $(COVERAGE_DIR)/$(COVERAGE_HTML)$(RESET)"
-	@echo "$(CYAN)[🌐] Opening coverage report in browser...$(RESET)"
-	@{ \
-		if command -v xdg-open >/dev/null 2>&1; then xdg-open $(COVERAGE_DIR)/$(COVERAGE_HTML); \
-		elif command -v open >/dev/null 2>&1; then open $(COVERAGE_DIR)/$(COVERAGE_HTML); \
-		else echo "$(YELLOW)[⚠️] Could not detect a command to open browser.$(RESET)"; fi; \
-	}
