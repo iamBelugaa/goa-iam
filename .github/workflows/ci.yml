@@ -1,10 +1,9 @@
 name: CI Process for IAM Application
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
       - main
-      - 'PLAT-*'
 jobs:
   ci:
     runs-on: ubuntu-latest

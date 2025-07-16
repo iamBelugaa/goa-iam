@@ -1,14 +1,9 @@
 name: Build IAM Application using Docker
 on:
   workflow_dispatch:
-
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-      - 'PLAT-*'
 jobs:
   build:
     runs-on: ubuntu-latest
