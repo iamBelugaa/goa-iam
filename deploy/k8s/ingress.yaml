@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: goa-iam-ingress
+  labels:
+    app.kubernetes.io/name: goa-iam
+    app.kubernetes.io/environment: development
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: iam.goa.com
+    http:
+      paths:
+      # Route all API traffic to the single IAM service
+      - pathType: Prefix
+        path: "/api/v1"
+        backend:
+          service:
+            name: goa-iam-service
+            port: 
+              name: iam-service
+      # Route root path to the service as well
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: goa-iam-service
+            port: 
+              name: iam-service
