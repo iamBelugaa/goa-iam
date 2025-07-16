@@ -1,0 +1,37 @@
+name: Build IAM Application using Docker
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - 'PLAT-*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Image Tag
+        id: tag
+        run:
+          echo "DOCKER_TAG=${{ github.event.number }}-${{ github.sha }}" >>
+          $GITHUB_OUTPUT
+
+      - name: Build Docker Image
+        run: make dockerize DOCKER_TAG="${{ steps.tag.outputs.DOCKER_TAG }}"
+
+      - name: Save Docker Image as Artifact
+        run:
+          docker save iam-service:${{ steps.tag.outputs.DOCKER_TAG }} | gzip >
+          iam-service-docker-image.tar.gz
+
+      - name: Upload Docker Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ steps.tag.outputs.DOCKER_TAG }}
+          path: iam-service-docker-image.tar.gz
