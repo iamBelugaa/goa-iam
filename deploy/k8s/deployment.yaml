@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goa-iam-deployment
+  labels:
+    app.kubernetes.io/name: goa-iam
+    app.kubernetes.io/environment: development
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: goa-iam
+      app.kubernetes.io/environment: development
+      app.kubernetes.io/component: goa-iam-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: goa-iam
+        app.kubernetes.io/environment: development
+        app.kubernetes.io/component: goa-iam-backend
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 65534
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+      - name: goa-iam-backend
+        image: iam-service:v1
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          runAsUser: 65534
+          runAsGroup: 65534
+          runAsNonRoot: true
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          # --------------- SERVER CONFIGURATION ---------------
+          - name: SERVER_HOST
+            valueFrom:
+              configMapKeyRef:
+                key: server.host
+                name: goa-iam-app-config
+          - name: SERVER_PORT
+            valueFrom:
+              configMapKeyRef:
+                key: server.port
+                name: goa-iam-app-config
+          - name: SERVER_READ_TIMEOUT
+            valueFrom:
+              configMapKeyRef:
+                key: server.readTimeout
+                name: goa-iam-app-config
+          - name: SERVER_IDLE_TIMEOUT
+            valueFrom:
+              configMapKeyRef:
+                key: server.idleTimeout
+                name: goa-iam-app-config
+          - name: SERVER_WRITE_TIMEOUT
+            valueFrom:
+              configMapKeyRef:
+                key: server.writeTimeout
+                name: goa-iam-app-config
+          - name: SERVER_SHUTDOWN_TIMEOUT
+            valueFrom:
+              configMapKeyRef:
+                key: server.shutdownTimeout
+                name: goa-iam-app-config
+
+          # --------------- AUTH CONFIGURATION ---------------
+          - name: AUTH_AUDIENCE
+            valueFrom:
+              configMapKeyRef:
+                key: auth.audience
+                name: goa-iam-app-config
+          - name: AUTH_ISSUER
+            valueFrom:
+              configMapKeyRef:
+                key: auth.issuer
+                name: goa-iam-app-config
+          - name: AUTH_ACCESS_TOKEN_EXP_TIME
+            valueFrom:
+              configMapKeyRef:
+                key: auth.accessTokenExpiration
+                name: goa-iam-app-config
+          - name: AUTH_REFRESH_TOKEN_EXP_TIME
+            valueFrom:
+              configMapKeyRef:
+                key: auth.refreshTokenExpiration
+                name: goa-iam-app-config
+          - name: AUTH_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: jwt.secret
+                name: goa-iam-app-secret
+
+          # --------------- LOGGING CONFIGURATION ---------------
+          - name: LOG_LEVEL
+            valueFrom:
+              configMapKeyRef:
+                key: log.level
+                name: goa-iam-app-config
+
+          # --------------- LOGGING CONFIGURATION ---------------
+          - name: APP_VERSION
+            valueFrom:
+              configMapKeyRef:
+                key: app.version
+                name: goa-iam-app-config
+          - name: SERVICE_NAME
+            valueFrom:
+              configMapKeyRef:
+                key: app.serviceName
+                name: goa-iam-app-config
+          - name: APP_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                key: app.environment
+                name: goa-iam-app-config
+
+        ports:
+        - containerPort: 8080
+          name: iam-backend
+          protocol: TCP
