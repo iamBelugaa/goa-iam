@@ -7,14 +7,7 @@ import (
 // API defines the global settings and metadata for the IAM Platform service.
 var _ = dsl.API("iam-platform", func() {
 	dsl.Title("Identity and Access Management Platform")
-	dsl.Description(
-		`The IAM Platform provides core identity related functionalities such as:
-			- User registration and login
-			- JWT-based authentication
-			- Role-based authorization
-			- Token management (access/refresh)
-		`,
-	)
+	dsl.Description("The IAM Platform provides core identity related functionalities.")
 	dsl.Version("0.1.0")
 
 	// License information
@@ -68,9 +61,6 @@ func CommonErrors() {
 
 	// 401 Unauthorized
 	dsl.Error("unauthorized", UnauthorizedError, "Authentication required or invalid credentials")
-
-	// 403 Forbidden
-	dsl.Error("forbidden", ForbiddenError, "Insufficient permissions for this operation")
 
 	// 404 Not Found
 	dsl.Error("not_found", NotFoundError, "Requested resource not found")

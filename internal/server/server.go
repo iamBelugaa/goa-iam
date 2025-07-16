@@ -93,11 +93,6 @@ func (s *server) ListenAndServe() error {
 	return nil
 }
 
-// ListenAndServeTLS is for starting a TLS enabled server.
-func (s *server) ListenAndServeTLS() error {
-	return nil
-}
-
 // Shutdown listens for termination signals or server errors
 // and performs a graceful shutdown of the HTTP server.
 func (s *server) Shutdown() error {

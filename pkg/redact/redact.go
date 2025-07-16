@@ -13,10 +13,7 @@ func RedactEmail(email string) string {
 		return "[REDACTED]"
 	}
 
-	if index > 0 {
-		return string(email[0]) + "***@" + email[index+1:]
-	}
-	return "[REDACTED]"
+	return string(email[0]) + "***@" + email[index+1:]
 }
 
 // RedactSensitiveData redacts all but the first and last two characters of a string.
@@ -24,5 +21,5 @@ func RedactSensitiveData(data string) string {
 	if len(data) <= 4 {
 		return "[REDACTED]"
 	}
-	return string(data[:2]) + "***" + string(data[len(data)-2])
+	return string(data[:2]) + "***" + string(data[len(data)-2:])
 }

@@ -13,7 +13,6 @@ var ErrorCode = dsl.Type("ErrorCode", dsl.String, func() {
 		codes.ValidationErrCode,
 		codes.InternalServerErrCode,
 		codes.UnauthorizedErrCode,
-		codes.ForbiddenErrCode,
 	)
 	dsl.Example(codes.ValidationErrCode)
 })
@@ -79,21 +78,6 @@ var UnauthorizedError = dsl.Type("UnauthorizedError", func() {
 
 	dsl.Attribute("code", ErrorCode, "Error code", func() {
 		dsl.Example("UNAUTHORIZED")
-	})
-
-	dsl.Required("message", "code")
-})
-
-// ForbiddenError represents an authorization error.
-var ForbiddenError = dsl.Type("ForbiddenError", func() {
-	dsl.Description("Forbidden error response")
-
-	dsl.Attribute("message", dsl.String, "Error message", func() {
-		dsl.Example("Insufficient permissions")
-	})
-
-	dsl.Attribute("code", ErrorCode, "Error code", func() {
-		dsl.Example("FORBIDDEN")
 	})
 
 	dsl.Required("message", "code")

@@ -54,20 +54,6 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 	return durationVal
 }
 
-func getEnvSlice(key string, fallback []string) []string {
-	val, ok := os.LookupEnv(key)
-	if !ok {
-		return fallback
-	}
-
-	parts := strings.Split(val, ",")
-	if len(parts) < 2 {
-		return fallback
-	}
-
-	return parts
-}
-
 func ToEnvironment(str string) Environment {
 	switch strings.ToLower(str) {
 	case "prod", "production":
