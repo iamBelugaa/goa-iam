@@ -1,8 +1,10 @@
 name: CI Process for IAM Application
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches:
       - main
+      - 'PLAT-*'
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -29,7 +31,7 @@ jobs:
         run: make deps
 
       - name: Install ginkgo
-        run: go install github.com/onsi/ginkgo/v2/ginkgo
+        run: make install-ginkgo
 
       - name: Run Tests
         run: make test
