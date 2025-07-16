@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: goa-iam-app-config
+  labels:
+    app.kubernetes.io/name: goa-iam
+    app.kubernetes.io/environment: development
+data:
+  # Server Configuration
+  server.host: "0.0.0.0"
+  server.port: "8080"
+  server.readTimeout: "10s"
+  server.writeTimeout: "10s"
+  server.idleTimeout: "25s"
+  server.shutdownTimeout: "30s"
+
+  # Auth Configuration
+  auth.audience: "http://localhost:8080"
+  auth.issuer: "https://issuer.iam.support"
+  auth.accessTokenExpiration: "1h0m0s"
+  auth.refreshTokenExpiration: "1440h0m0s"
+
+  # Logging Configuration
+  log.level: "info"
+
+  # Application Configuration
+  app.version: "0.1.0"
+  app.serviceName: "goa-iam"
+  app.environment: "development"
