@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/iamBelugaa/goa-iam/gen/user/gen/user"
+
+	"github.com/iamBelugaa/goa-iam/gen/user"
 	userdomain "github.com/iamBelugaa/goa-iam/internal/domain/user"
 )
 

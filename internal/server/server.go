@@ -13,10 +13,10 @@ import (
 
 	goahttp "goa.design/goa/v3/http"
 
-	genauth "github.com/iamBelugaa/goa-iam/gen/auth/gen/auth"
-	genauthserver "github.com/iamBelugaa/goa-iam/gen/auth/gen/http/auth/server"
-	genuserserver "github.com/iamBelugaa/goa-iam/gen/user/gen/http/user/server"
-	genuser "github.com/iamBelugaa/goa-iam/gen/user/gen/user"
+	genauth "github.com/iamBelugaa/goa-iam/gen/auth"
+	genauthserver "github.com/iamBelugaa/goa-iam/gen/http/auth/server"
+	genuserserver "github.com/iamBelugaa/goa-iam/gen/http/user/server"
+	genuser "github.com/iamBelugaa/goa-iam/gen/user"
 
 	"github.com/iamBelugaa/goa-iam/internal/config"
 	"github.com/iamBelugaa/goa-iam/internal/services/authsvc"

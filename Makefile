@@ -59,8 +59,6 @@ clean:
 gen-goa:
 	@echo "Generating Goa code..."
 	@goa gen github.com/iamBelugaa/goa-iam/internal/design
-	@goa gen github.com/iamBelugaa/goa-iam/internal/services/authsvc/design -o $(GOA_GEN_DIR)/auth
-	@goa gen github.com/iamBelugaa/goa-iam/internal/services/usersvc/design -o $(GOA_GEN_DIR)/user
 	@echo "Goa code generation complete."
 
 ## Build the binary

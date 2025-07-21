@@ -7,7 +7,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/iamBelugaa/goa-iam/gen/auth/gen/auth"
+
+	"github.com/iamBelugaa/goa-iam/gen/auth"
 	"github.com/iamBelugaa/goa-iam/internal/config"
 	"github.com/iamBelugaa/goa-iam/internal/domain/codes"
 )

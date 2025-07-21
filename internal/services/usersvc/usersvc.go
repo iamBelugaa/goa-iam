@@ -5,7 +5,8 @@ import (
 	"context"
 	"fmt"
 
-	genuser "github.com/iamBelugaa/goa-iam/gen/user/gen/user"
+	genuser "github.com/iamBelugaa/goa-iam/gen/user"
+
 	userstore "github.com/iamBelugaa/goa-iam/internal/services/usersvc/store"
 	"github.com/iamBelugaa/goa-iam/pkg/logger"
 	"github.com/iamBelugaa/goa-iam/pkg/redact"

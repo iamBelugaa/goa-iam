@@ -4,7 +4,7 @@ package userstore
 import (
 	"context"
 
-	"github.com/iamBelugaa/goa-iam/gen/user/gen/user"
+	"github.com/iamBelugaa/goa-iam/gen/user"
 )
 
 // UserStorer defines the contract for managing user data in a storage backend.
