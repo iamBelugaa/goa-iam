@@ -114,7 +114,7 @@ var _ = dsl.Service("auth", func() {
 	dsl.Description("The auth service handles user registration, authentication, and token issuance.")
 
 	// Common domain level error types.
-	CommonErrors()
+	commonErrors()
 
 	// Specific service level errors.
 	dsl.Error("invalid_credentials", UnauthorizedError, "Invalid email or password")

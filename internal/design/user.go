@@ -153,7 +153,7 @@ var _ = dsl.Service("user", func() {
 	dsl.Description("User management service for CRUD operations on users, roles, and permissions.")
 
 	// Common domain level error types.
-	CommonErrors()
+	commonErrors()
 
 	// Specific service level errors.
 	dsl.Error("email_exists", ConflictError, "Email address is already registered.")

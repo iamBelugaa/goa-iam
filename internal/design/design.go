@@ -54,8 +54,8 @@ var SuccessResponse = dsl.Type("SuccessResponse", func() {
 	dsl.Required("success", "message")
 })
 
-// CommonErrors defines error types that are shared across multiple services.
-func CommonErrors() {
+// commonErrors defines error types that are shared across multiple services.
+func commonErrors() {
 	// 400 Bad Request
 	dsl.Error("bad_request", ValidationError, "Invalid request data or parameters")
 
